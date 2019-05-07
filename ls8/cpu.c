@@ -1,4 +1,7 @@
 #include "cpu.h"
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #define DATA_LEN 6
 
@@ -29,33 +32,59 @@ void cpu_load(struct cpu *cpu)
 /**
  * ALU
  */
-void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB)
-{
-  switch (op) {
-    case ALU_MUL:
-      // TODO
-      break;
+// void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB)
+// {
+//   switch (op) {
+//     case ALU_MUL:
+//       // TODO
+//       break;
 
-    // TODO: implement more ALU ops
-  }
-}
+//     // TODO: implement more ALU ops
+//   }
+// }
 
 /**
  * Run the CPU
  */
 void cpu_run(struct cpu *cpu)
 {
+	// init
   int running = 1; // True until we get a HLT instruction
+  int IR, reg_num, val;
 
+  // main loop
   while (running) {
     // TODO
     // 1. Get the value of the current instruction (in address PC).
-    // 2. Figure out how many operands this next instruction requires
-    // 3. Get the appropriate value(s) of the operands following this instruction
-    // 4. switch() over it to decide on a course of action.
-    // 5. Do whatever the instruction should do according to the spec.
-    // 6. Move the PC to the next instruction.
-	switch ()
+	IR = cpu->ram[cpu->PC];
+    // 2. Figure out how many operands this next instruction requires -- LOL no. 
+    // 3. Get the appropriate value(s) of the operands following this instruction -- LOL no.
+    // 4. switch() over it to decide on a course of action. -- hmm maybe
+	switch (IR) {
+    	// 5. Do whatever the instruction should do according to the spec.
+    	// 6. Move the PC to the next instruction.
+		case 0b10000010: // LDI
+			reg_num = cpu->ram[cpu->PC + 1];
+			val = cpu->ram[cpu->PC + 2];
+			cpu->reg[reg_num] = val;
+			cpu->PC += 3; // next inst
+			break;
+
+		case 0b01000111: // PRN
+		    reg_num = cpu->ram[cpu->PC + 1];
+            printf("%d\n", cpu->reg[reg_num]);
+            cpu->PC += 2; // next inst
+            break;
+
+        case 0b00000001: // HLT
+            running = 0;
+            cpu->PC++; // move to next instruction
+            break;
+
+		default: 
+			printf("lol, this is the worst week of your life. Get rekt.");
+			exit(1);
+	}
   }
 }
 
