@@ -65,7 +65,7 @@ but you'll have to implement those three above instructions first!
 ```
 1. The FAQ
 2. The readme
-3 - 25. What is dis?
+3 - 25. What is this?
 ```
 
 Done
@@ -99,12 +99,16 @@ unsigned char x;
 (Weirdly in C, if you don't specific `signed` or `unsigned` with a `char`, it's
 up to the compiler which it uses.)
 
+DONE
+
 ## Step 2: Add RAM functions
 
 In `cpu.c`, add functions `cpu_ram_read()` and `cpu_ram_write()` that access the
 RAM inside the `struct cpu`.
 
 We'll make use of these helper function later.
+
+DONE
 
 ## Step 3: Implement the core of `cpu_init()`
 
