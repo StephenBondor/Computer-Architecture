@@ -41,16 +41,20 @@ void cpu_load(struct cpu *cpu, char *filename)
 /**
  * ALU
  */
-// void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB)
-// {
-//   switch (op) {
-//     case ALU_MUL:
-//       // TODO
-//       break;
+void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB)
+{
+  	switch (op) {
+		case ALU_MUL:
+			// TODO
+			cpu->reg[regA] = cpu->reg[regA] * cpu->reg[regB];
+			break;
+		// TODO: implement more ALU ops
 
-//     // TODO: implement more ALU ops
-//   }
-// }
+		default: 
+			printf("lol, this is the worst week of your life. Get rekt with love from ALU\n");
+			exit(1);
+  	}
+}
 
 /**
  * Run the CPU
@@ -86,12 +90,16 @@ void cpu_run(struct cpu *cpu)
 				printf("%d\n", cpu->reg[operandA]);
 				break;
 
+			case 0b10100010: // MUL
+				alu(cpu, ALU_MUL, operandA, operandB);
+				break;
+
 			case 0b00000001: // HLT
 				running = 0;
 				break;
 
 			default: 
-				printf("lol, this is the worst week of your life. Get rekt.");
+				printf("lol, this is the worst week of your life. Get rekt.\n");
 				exit(1);
 		}
 

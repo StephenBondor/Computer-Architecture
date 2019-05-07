@@ -238,6 +238,8 @@ comment.
 You'll have to convert the binary strings to integer values to store in RAM. The
 built-in `strtoul()` library function might help you here.
 
+DONE
+
 ## Step 9: Implement a Multiply and Print the Result
 
 Extend your LS8 emulator to support the following program:
@@ -270,6 +272,8 @@ Check the LS-8 spec for what the `MUL` instruction does.
 > Note: `MUL` is the responsiblity of the ALU, so it would be nice if your code
 > eventually called the `alu()` function with appropriate arguments to get the
 > work done.
+
+DONE
 
 ## Step 10: Beautify your `cpu_run()` loop, if needed
 
