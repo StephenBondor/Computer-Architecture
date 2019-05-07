@@ -50,41 +50,43 @@ void cpu_run(struct cpu *cpu)
 {
 	// init
   int running = 1; // True until we get a HLT instruction
-  int IR, reg_num, val;
+  int IR, bytes_to_next_inst, operandA, operandB;
 
   // main loop
   while (running) {
     // TODO
     // 1. Get the value of the current instruction (in address PC).
 	IR = cpu->ram[cpu->PC];
-    // 2. Figure out how many operands this next instruction requires -- LOL no. 
-    // 3. Get the appropriate value(s) of the operands following this instruction -- LOL no.
+
+    // 2. Figure out how many operands this next instruction requires. 
+	bytes_to_next_inst = ((IR >> 6) & 0b11) + 1;
+
+    // 3. Get the appropriate value(s) of the operands following this instruction -- LOL why?.
+	operandA = cpu_ram_read(cpu, 1);
+	operandB = cpu_ram_read(cpu, 2);
+
     // 4. switch() over it to decide on a course of action. -- hmm maybe
 	switch (IR) {
+
     	// 5. Do whatever the instruction should do according to the spec.
-    	// 6. Move the PC to the next instruction.
 		case 0b10000010: // LDI
-			reg_num = cpu->ram[cpu->PC + 1];
-			val = cpu->ram[cpu->PC + 2];
-			cpu->reg[reg_num] = val;
-			cpu->PC += 3; // next inst
+			cpu->reg[operandA] = operandB;
 			break;
 
 		case 0b01000111: // PRN
-		    reg_num = cpu->ram[cpu->PC + 1];
-            printf("%d\n", cpu->reg[reg_num]);
-            cpu->PC += 2; // next inst
+            printf("%d\n", cpu->reg[operandA]);
             break;
 
         case 0b00000001: // HLT
             running = 0;
-            cpu->PC++; // move to next instruction
             break;
 
 		default: 
 			printf("lol, this is the worst week of your life. Get rekt.");
 			exit(1);
 	}
+    // 6. Move the PC to the next instruction.
+	cpu->PC = cpu->PC + bytes_to_next_inst;
   }
 }
 
@@ -102,10 +104,9 @@ void cpu_init(struct cpu *cpu)
   memset(cpu->ram, 0, 256);
 }
 
-void cpu_ram_read()
+int cpu_ram_read(struct cpu *cpu, int offset)
 {
-// i wrote these, no idea what on earth they are for or why they are needed
-// to "that access the RAM inside the `struct cpu`."
+	return cpu->ram[cpu->PC + offset];
 }
 
 void cpu_ram_write() 

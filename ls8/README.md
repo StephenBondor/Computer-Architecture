@@ -119,7 +119,7 @@ as necessary. At first, the PC, registers, and RAM should be cleared to zero.
 Later on, you might do further initialization here, e.g. setting the initial
 value of the stack pointer.
 
-LOL DONE
+DONE
 
 ## Step 4: Implement the core of `cpu_run()`
 
@@ -138,31 +138,49 @@ other times it's a constant value (in the case of `LDI`). Using
 `cpu_ram_read()`, read the bytes at `PC+1` and `PC+2` from RAM into variables
 `operandA` and `operandB` in case the instruction needs them.
 
+DONE
+
 Then, depending on the value of the opcode, perform the actions needed for the
 instruction per the LS-8 spec. Maybe a `switch` statement...? Plenty of options.
+
+ok
 
 After the handler returns, the `PC` needs to be updated to point to the next
 instruction for the next iteration of the loop in `cpu_run()`. The number of
 bytes an instruction uses can be determined from the two high bits (bits 6-7) of
 the instruction opcode. See the LS-8 spec for details.
 
+DONE
+
 ## Step 5: Implement the `HLT` instruction handler
 
 Add the `HLT` instruction to `cpu.h`.
+
+DONE
 
 In `cpu_run()` in your switch, exit the loop if a `HLT` instruction is
 encountered, regardless of whether or not there are more lines of code in the
 LS-8 program you loaded.
 
+DONE
+
 We can consider `HLT` to be similar to a `return` or `exit()` in that we stop
 whatever we are doing, wherever we are.
+
+Ok
 
 ## Step 6: Add the `LDI` instruction
 
 This instruction sets a specified register to a specified value.
 
+ok
+
 See the LS-8 spec for the details of what this instructions does and its opcode
 value.
+
+ok
+
+DONE
 
 ## Step 7: Add the `PRN` instruction
 
@@ -171,6 +189,8 @@ the LS-8 spec.
 
 _At this point, you should be able to run the program and have it print `8` to
 the console!_
+
+DONE
 
 ## Step 8: Un-hardcode the machine code
 
