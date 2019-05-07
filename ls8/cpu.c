@@ -8,25 +8,34 @@
 /**
  * Load the binary bytes from a .ls8 source file into a RAM array
  */
-void cpu_load(struct cpu *cpu)
+void cpu_load(struct cpu *cpu, char *filename)
 {
-  char data[DATA_LEN] = {
-    // From print8.ls8
-    0b10000010, // LDI R0,8
-    0b00000000,
-    0b00001000,
-    0b01000111, // PRN R0
-    0b00000000,
-    0b00000001  // HLT
-  };
+	// TODO: Replace this with something less hard-coded
+    FILE *fp;
+    char line[1024];
+    int address = 0;
+    char *endptr;
+	unsigned int val;
 
-  int address = 0;
+    fp = fopen(filename, "r");
 
-  for (int i = 0; i < DATA_LEN; i++) {
-    cpu->ram[address++] = data[i];
-  }
+    if (fp == NULL) {
+        fprintf(stderr,"comp: error opening file\n");
+        exit(2);
+    }
 
-  // TODO: Replace this with something less hard-coded
+    while (fgets(line, 1024, fp) != NULL) {
+        val = strtoul(line, &endptr, 2);
+        if (endptr == line) {
+            // printf("Found no digits\n");
+            continue;
+        }
+        // printf("%u\n", val);
+        cpu->ram[address] = val;
+        address++;
+    }
+
+    fclose(fp);
 }
 
 /**
@@ -49,45 +58,46 @@ void cpu_load(struct cpu *cpu)
 void cpu_run(struct cpu *cpu)
 {
 	// init
-  int running = 1; // True until we get a HLT instruction
-  int IR, bytes_to_next_inst, operandA, operandB;
+  	int running = 1; // True until we get a HLT instruction
+ 	int IR, bytes_to_next_inst, operandA, operandB;
 
-  // main loop
-  while (running) {
-    // TODO
-    // 1. Get the value of the current instruction (in address PC).
-	IR = cpu->ram[cpu->PC];
+  	// main loop
+  	while (running) {
+		// TODO
+		// 1. Get the value of the current instruction (in address PC).
+		IR = cpu->ram[cpu->PC];
 
-    // 2. Figure out how many operands this next instruction requires. 
-	bytes_to_next_inst = ((IR >> 6) & 0b11) + 1;
+		// 2. Figure out how many operands this next instruction requires. 
+		bytes_to_next_inst = ((IR >> DATA_LEN) & 0b11) + 1;
 
-    // 3. Get the appropriate value(s) of the operands following this instruction -- LOL why?.
-	operandA = cpu_ram_read(cpu, 1);
-	operandB = cpu_ram_read(cpu, 2);
+		// 3. Get the appropriate value(s) of the operands following this instruction -- LOL why?.
+		operandA = cpu_ram_read(cpu, 1);
+		operandB = cpu_ram_read(cpu, 2);
 
-    // 4. switch() over it to decide on a course of action. -- hmm maybe
-	switch (IR) {
+		// 4. switch() over it to decide on a course of action. -- hmm maybe
+		switch (IR) {
 
-    	// 5. Do whatever the instruction should do according to the spec.
-		case 0b10000010: // LDI
-			cpu->reg[operandA] = operandB;
-			break;
+			// 5. Do whatever the instruction should do according to the spec.
+			case 0b10000010: // LDI
+				cpu->reg[operandA] = operandB;
+				break;
 
-		case 0b01000111: // PRN
-            printf("%d\n", cpu->reg[operandA]);
-            break;
+			case 0b01000111: // PRN
+				printf("%d\n", cpu->reg[operandA]);
+				break;
 
-        case 0b00000001: // HLT
-            running = 0;
-            break;
+			case 0b00000001: // HLT
+				running = 0;
+				break;
 
-		default: 
-			printf("lol, this is the worst week of your life. Get rekt.");
-			exit(1);
-	}
-    // 6. Move the PC to the next instruction.
-	cpu->PC = cpu->PC + bytes_to_next_inst;
-  }
+			default: 
+				printf("lol, this is the worst week of your life. Get rekt.");
+				exit(1);
+		}
+
+		// 6. Move the PC to the next instruction.
+		cpu->PC = cpu->PC + bytes_to_next_inst;
+  	}
 }
 
 /**
@@ -95,13 +105,13 @@ void cpu_run(struct cpu *cpu)
  */
 void cpu_init(struct cpu *cpu)
 {
-  // TODO: Initialize the PC and other special registers
-  cpu = malloc(sizeof(struct cpu));
-  memset(cpu->reg, 0, 7);
-  cpu->reg[7] = 0xF4;
-  cpu->PC = 0;
-  cpu->FL = 0;
-  memset(cpu->ram, 0, 256);
+	// TODO: Initialize the PC and other special registers
+	cpu = malloc(sizeof(struct cpu));
+	memset(cpu->reg, 0, 7);
+	cpu->reg[7] = 0xF4;
+	cpu->PC = 0;
+	cpu->FL = 0;
+	memset(cpu->ram, 0, 256);
 }
 
 int cpu_ram_read(struct cpu *cpu, int offset)
