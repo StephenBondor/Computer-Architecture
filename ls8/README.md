@@ -119,6 +119,8 @@ as necessary. At first, the PC, registers, and RAM should be cleared to zero.
 Later on, you might do further initialization here, e.g. setting the initial
 value of the stack pointer.
 
+LOL DONE
+
 ## Step 4: Implement the core of `cpu_run()`
 
 This is the workhorse function of the entire processor. It's the most difficult

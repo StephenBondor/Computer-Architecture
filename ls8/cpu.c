@@ -65,4 +65,22 @@ void cpu_run(struct cpu *cpu)
 void cpu_init(struct cpu *cpu)
 {
   // TODO: Initialize the PC and other special registers
+  cpu = malloc(sizeof(struct cpu));
+  memset(cpu->reg, 0, 7);
+  cpu->reg[7] = 0xF4;
+  cpu->PC = 0;
+  cpu->FL = 0;
+  memset(cpu->ram, 0, 256);
+}
+
+void cpu_ram_read()
+{
+// i wrote these, no idea what on earth they are for or why they are needed
+// to "that access the RAM inside the `struct cpu`."
+}
+
+void cpu_ram_write() 
+{
+// i wrote these, no idea what on earth they are for or why they are needed
+// to "that access the RAM inside the `struct cpu`."
 }
