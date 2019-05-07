@@ -60,11 +60,31 @@ but you'll have to implement those three above instructions first!
 
 ## Step 0: IMPORTANT: inventory what is here!
 
--   Make a list of files here.
+-   Make a list of files here. ok.
+
+```
+1. The FAQ
+2. The readme
+3 - 25. What is dis?
+```
+
+Done
+
 -   Write a short 3-10-word description of what each file does.
+
+See above.
+
 -   Note what has been implemented, and what hasn't.
+
+Against what standard should i know what has or has not been implemented?
+
 -   Read this whole file.
+
+Done
+
 -   Skim the spec.
+
+Done
 
 ## Step 1: Implement `struct cpu` in `cpu.h`
 
