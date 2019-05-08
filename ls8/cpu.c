@@ -8,31 +8,30 @@
 /**
  * Load the binary bytes from a .ls8 source file into a RAM array
  */
-void cpu_load(struct cpu *cpu, char *filename)
+void cpu_load(struct cpu *cpu, char *file)
 {
-	// TODO: Replace this with something less hard-coded
     FILE *fp;
     char line[1024];
     int address = 0;
     char *endptr;
-	unsigned int val;
+	unsigned int value;
 
-    fp = fopen(filename, "r");
+    fp = fopen(file, "r");
 
-    if (fp == NULL) {
+    if (fp == NULL) 
+	{
         fprintf(stderr,"comp: error opening file\n");
         exit(2);
     }
 
-    while (fgets(line, 1024, fp) != NULL) {
-        val = strtoul(line, &endptr, 2);
-        if (endptr == line) {
-            // printf("Found no digits\n");
-            continue;
+    while (fgets(line, 1024, fp) != NULL) 
+	{
+        value = strtoul(line, &endptr, 2);
+        if (endptr == line) 
+		{ 
+            continue; // printf("Found no digits on this line\n");
         }
-        // printf("%u\n", val);
-        cpu->ram[address] = val;
-        address++;
+		cpu_ram_write(cpu, address++, value); // printf("%u\n", value);
     }
 
     fclose(fp);
@@ -43,16 +42,17 @@ void cpu_load(struct cpu *cpu, char *filename)
  */
 void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB)
 {
+	unsigned char *A = &cpu->reg[regA];
+	unsigned char *B = &cpu->reg[regB];
+	
   	switch (op) {
-		case ALU_MUL:
-			// TODO
-			cpu->reg[regA] = cpu->reg[regA] * cpu->reg[regB];
-			break;
-		// TODO: implement more ALU ops
-
-		default: 
-			printf("lol, this is the worst week of your life. Get rekt with love from ALU\n");
-			exit(1);
+		case ALU_MUL:	*A *= *B;	break;
+		case ALU_SUB:	*A -= *B;	break;
+		case ALU_ADD:	*A += *B;	break;
+		case ALU_DIV:	*A /= *B;	break;
+		case ALU_MOD:	*A %= *B;	break;
+		
+		default: printf("Get rekt with love - ALU\n"); exit(1);
   	}
 }
 
@@ -61,50 +61,41 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
  */
 void cpu_run(struct cpu *cpu)
 {
-	// init
-  	int running = 1; // True until we get a HLT instruction
- 	int IR, bytes_to_next_inst, operandA, operandB;
+  	int run = 1; 
+ 	int IR, adv_by, opA, opB;
+	unsigned char r[8];
 
   	// main loop
-  	while (running) {
-		// TODO
-		// 1. Get the value of the current instruction (in address PC).
-		IR = cpu->ram[cpu->PC];
+  	while (run) 
+	{
+		IR = cpu_ram_read(cpu, 0);
+		adv_by = ((IR >> DATA_LEN) & 0b11) + 1;
+		opA = cpu_ram_read(cpu, 1);
+		opB = cpu_ram_read(cpu, 2);
+		memcpy(r, cpu->reg, 8*sizeof(unsigned char)); // v b/c pretty v
 
-		// 2. Figure out how many operands this next instruction requires. 
-		bytes_to_next_inst = ((IR >> DATA_LEN) & 0b11) + 1;
-
-		// 3. Get the appropriate value(s) of the operands following this instruction -- LOL why?.
-		operandA = cpu_ram_read(cpu, 1);
-		operandB = cpu_ram_read(cpu, 2);
-
-		// 4. switch() over it to decide on a course of action. -- hmm maybe
-		switch (IR) {
-
-			// 5. Do whatever the instruction should do according to the spec.
-			case 0b10000010: // LDI
-				cpu->reg[operandA] = operandB;
-				break;
-
-			case 0b01000111: // PRN
-				printf("%d\n", cpu->reg[operandA]);
-				break;
-
-			case 0b10100010: // MUL
-				alu(cpu, ALU_MUL, operandA, operandB);
-				break;
-
-			case 0b00000001: // HLT
-				running = 0;
-				break;
-
-			default: 
-				printf("lol, this is the worst week of your life. Get rekt.\n");
-				exit(1);
+		// main switch
+		switch (IR) 
+		{
+			// ALU operations -- Basic Math
+			case ADD: alu(cpu, ALU_ADD, opA, opB); 			break;
+			case SUB: alu(cpu, ALU_SUB, opA, opB); 			break;
+			case MUL: alu(cpu, ALU_MUL, opA, opB); 			break;
+			case DIV: if(r[opB]){alu(cpu,ALU_DIV,opA,opB);}
+				else  {run = 0;printf("ERR: div by 0.\n");}	break;
+			case MOD: if(r[opB]){alu(cpu,ALU_MOD,opA,opB);}
+				else  {run = 0;printf("ERR: div by 0.\n");}	break;
+			// Bitwise Crap... if we need it
+			
+			// Everything else
+			case LDI: cpu->reg[opA] = opB; 					break;
+			case PRN: printf("%d\n", r[opA]);				break;
+			
+			// Admin
+			case HLT: run = 0; 								break;
+			default:  printf("lol, Get rekt.\n");			exit(1);
 		}
-
-		// 6. Move the PC to the next instruction.
-		cpu->PC = cpu->PC + bytes_to_next_inst;
+		cpu->PC += adv_by;
   	}
 }
 
@@ -113,7 +104,6 @@ void cpu_run(struct cpu *cpu)
  */
 void cpu_init(struct cpu *cpu)
 {
-	// TODO: Initialize the PC and other special registers
 	cpu = malloc(sizeof(struct cpu));
 	memset(cpu->reg, 0, 7);
 	cpu->reg[7] = 0xF4;
@@ -122,13 +112,15 @@ void cpu_init(struct cpu *cpu)
 	memset(cpu->ram, 0, 256);
 }
 
+/**
+ * Read/write helpers
+ */
 int cpu_ram_read(struct cpu *cpu, int offset)
 {
 	return cpu->ram[cpu->PC + offset];
 }
 
-void cpu_ram_write() 
+void cpu_ram_write(struct cpu *cpu, int address, unsigned int value) 
 {
-// i wrote these, no idea what on earth they are for or why they are needed
-// to "that access the RAM inside the `struct cpu`."
+	cpu->ram[address] = value;
 }
