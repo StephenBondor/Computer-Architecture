@@ -27,12 +27,14 @@ enum alu_op {
 #define DIV  0b10100011
 #define SUB  0b10100001
 #define ADD  0b10100000
+#define PUSH 0b01000101
+#define POP  0b01000110
 
 // Function declarations
 extern void cpu_load(struct cpu *cpu, char *filename);
 extern void cpu_init(struct cpu *cpu);
 extern void cpu_run(struct cpu *cpu);
-int cpu_ram_read(struct cpu *cpu, int offset);
-void cpu_ram_write(struct cpu *cpu, int address, unsigned int value);
+int ram_r(struct cpu *cpu, int offset, int reg_address);
+void ram_w(struct cpu *cpu, int address, unsigned int value);
 
 #endif

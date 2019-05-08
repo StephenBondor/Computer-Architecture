@@ -11,27 +11,26 @@
 void cpu_load(struct cpu *cpu, char *file)
 {
     FILE *fp;
-    char line[1024];
+    char line[256];
     int address = 0;
     char *endptr;
 	unsigned int value;
 
     fp = fopen(file, "r");
-
     if (fp == NULL) 
 	{
         fprintf(stderr,"comp: error opening file\n");
         exit(2);
     }
 
-    while (fgets(line, 1024, fp) != NULL) 
+    while (fgets(line, 256, fp) != NULL) 
 	{
         value = strtoul(line, &endptr, 2);
         if (endptr == line) 
 		{ 
             continue; // printf("Found no digits on this line\n");
         }
-		cpu_ram_write(cpu, address++, value); // printf("%u\n", value);
+		ram_w(cpu, address++, value); // printf("%u\n", value);
     }
 
     fclose(fp);
@@ -68,33 +67,41 @@ void cpu_run(struct cpu *cpu)
   	// main loop
   	while (run) 
 	{
-		IR = cpu_ram_read(cpu, 0);
+		IR = ram_r(cpu, 0, -1);
 		adv_by = ((IR >> DATA_LEN) & 0b11) + 1;
-		opA = cpu_ram_read(cpu, 1);
-		opB = cpu_ram_read(cpu, 2);
+		opA = ram_r(cpu, 1, -1);
+		opB = ram_r(cpu, 2, -1);
+
+		// helpers
 		memcpy(r, cpu->reg, 8*sizeof(unsigned char)); // v b/c pretty v
 
 		// main switch
 		switch (IR) 
 		{
 			// ALU operations -- Basic Math
-			case ADD: alu(cpu, ALU_ADD, opA, opB); 			break;
-			case SUB: alu(cpu, ALU_SUB, opA, opB); 			break;
-			case MUL: alu(cpu, ALU_MUL, opA, opB); 			break;
-			case DIV: if(r[opB]){alu(cpu,ALU_DIV,opA,opB);}
-				else  {run = 0;printf("ERR: div by 0.\n");}	break;
-			case MOD: if(r[opB]){alu(cpu,ALU_MOD,opA,opB);}
-				else  {run = 0;printf("ERR: div by 0.\n");}	break;
-			// Bitwise Crap... if we need it
+			case ADD:	alu(cpu, ALU_ADD, opA, opB); 			break;
+			case SUB:	alu(cpu, ALU_SUB, opA, opB); 			break;
+			case MUL:	alu(cpu, ALU_MUL, opA, opB); 			break;
+			case DIV:	if(r[opB]){alu(cpu,ALU_DIV,opA,opB);}
+				else	{run = 0;printf("ERR: div by 0.\n");}	break;
+			case MOD:	if(r[opB]){alu(cpu,ALU_MOD,opA,opB);}
+				else	{run = 0;printf("ERR: div by 0.\n");}	break;
+
+			// Stack jUnK
+			case PUSH:	cpu->reg[7]--; 
+						ram_w(cpu, cpu->reg[7], r[opA]);		break;
+			case POP:	cpu->reg[opA] = ram_r(cpu, 0, 7); 
+						cpu->reg[7]++; 							break;
 			
 			// Everything else
-			case LDI: cpu->reg[opA] = opB; 					break;
-			case PRN: printf("%d\n", r[opA]);				break;
+			case LDI: cpu->reg[opA] = opB; 						break;
+			case PRN: printf("%d\n", r[opA]);					break;
 			
 			// Admin
-			case HLT: run = 0; 								break;
-			default:  printf("lol, Get rekt.\n");			exit(1);
+			case HLT: run = 0; 									break;
+			default:  printf("lol, Get rekt.\n");				exit(1);
 		}
+
 		cpu->PC += adv_by;
   	}
 }
@@ -106,7 +113,7 @@ void cpu_init(struct cpu *cpu)
 {
 	cpu = malloc(sizeof(struct cpu));
 	memset(cpu->reg, 0, 7);
-	cpu->reg[7] = 0xF4;
+	cpu->reg[7] = 0xF4; // stack pointer
 	cpu->PC = 0;
 	cpu->FL = 0;
 	memset(cpu->ram, 0, 256);
@@ -115,12 +122,19 @@ void cpu_init(struct cpu *cpu)
 /**
  * Read/write helpers
  */
-int cpu_ram_read(struct cpu *cpu, int offset)
+int ram_r(struct cpu *cpu, int offset, int reg_address)
 {
-	return cpu->ram[cpu->PC + offset];
+	if (reg_address == -1)
+	{	// this is for reading loaded memory directions from a program
+		return cpu->ram[cpu->PC + offset];
+	} 
+	else 
+	{	// this is for reading memory by a register address
+		return cpu->ram[cpu->reg[reg_address]];
+	}
 }
 
-void cpu_ram_write(struct cpu *cpu, int address, unsigned int value) 
+void ram_w(struct cpu *cpu, int address, unsigned int value) 
 {
 	cpu->ram[address] = value;
 }
