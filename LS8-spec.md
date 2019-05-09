@@ -233,7 +233,7 @@ Machine code:
 50 0r
 ```
 
-ADDED TO DO
+DONE
 
 ### CMP
 
@@ -460,7 +460,7 @@ Machine code:
 54 0r
 ```
 
-ADDED TODO
+DONE
 
 ### JNE
 
@@ -476,7 +476,7 @@ Machine code:
 56 0r
 ```
 
-ADDED TODO
+DONE
 
 ### LD
 
@@ -685,7 +685,7 @@ Machine Code:
 11
 ```
 
-ADDED TODO
+DONE
 
 ### SHL
 

@@ -12,25 +12,26 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
 {
 	unsigned char *A = &cpu->reg[regA];
 	unsigned char *B = &cpu->reg[regB];
+	int *FL = &cpu->FL;
 	
   	switch (op) {
-		case ALU_ADD:	*A += *B;				break; // basic math
-		case ALU_SUB:	*A -= *B;				break;
-		case ALU_MUL:	*A *= *B;				break;  
-		case ALU_DIV:	*A /= *B;				break;
-		case ALU_MOD:	*A %= *B;				break;
-		case ALU_NOT: 	*A = !*A;				break; // bitwise ops
-		case ALU_AND: 	*A &= *B; 				break; 
-		case ALU_OR :	*A |= *B;				break; 
-		case ALU_XOR:	*A ^= *B;				break;
-		case ALU_DEC: 	*A = *A - 1;			break; // Other
-		case ALU_INC: 	*A = *A + 1;			break;
-		case ALU_SHL:	*A <<= *B;				break; 
-		case ALU_SHR:	*A >>= *B;				break; 
-		case ALU_CMP:	if(*A==*B){cpu->FL=1;}
-				else 	if(*A >*B){cpu->FL=2;}
-				else 			  {cpu->FL=4;}	break;
-		default: printf("Get rekt - ALU\n"); 	exit(1);
+		case ALU_ADD:	*A += *B;			break; // basic math
+		case ALU_SUB:	*A -= *B;			break;
+		case ALU_MUL:	*A *= *B;			break;  
+		case ALU_DIV:	*A /= *B;			break;
+		case ALU_MOD:	*A %= *B;			break;
+		case ALU_NOT: 	*A = !*A;			break; // bitwise ops
+		case ALU_AND: 	*A &= *B;			break; 
+		case ALU_OR :	*A |= *B;			break; 
+		case ALU_XOR:	*A ^= *B;			break;
+		case ALU_DEC: 	*A = *A - 1;		break; // Other
+		case ALU_INC: 	*A = *A + 1;		break;
+		case ALU_SHL:	*A <<= *B;			break; 
+		case ALU_SHR:	*A >>= *B;			break; 
+		case ALU_CMP:	*FL = *A == *B	? 
+							1 : *A > *B	?
+								2 : 4;		break;
+		default: printf("Get ALU rekt\n"); 	exit(1);
   	}
 }
 
@@ -40,24 +41,46 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
 void cpu_run(struct cpu *cpu)
 {
   	int run = 1; 
- 	int IR, adv_by, opA, opB;
+ 	int IR, ab, opA, opB;
 	unsigned char r[8];
 
   	// main loop
   	while (run) 
 	{
+		// if interrupts enabled:
+			// see if a  timer interrupt occurred
+			// 		if so, set bit 0 of IS
+
+			// see if a  keyboard interrupt occurred
+			// 		if so, set bit 1 of IS
+			
+			// maskedInterupts = IS & IM
+
+			// is maskedInterupts nonzero?
+			// if so:
+			//		Scan maskedInterupts looking for lowest interrupt
+			//		Set that bit to 0 in IS
+			// 		Push everything on the stack 
+			//		Disable interupts
+			//		set the PC to the interrupt handler address
+
+
+
 		IR = ram_r(cpu, 0, -1, -1);
-		adv_by = ((IR >> DATA_LEN) & 0b11) + 1;
+		ab = ((IR >> DATA_LEN) & 0b11) + 1; // advance by
 		opA = ram_r(cpu, 1, -1, -1);
 		opB = ram_r(cpu, 2, -1, -1);
 
-		// helpers
-		memcpy(r, cpu->reg, 8*sizeof(unsigned char)); // v b/c pretty v
+		// helpers: because the switch statement is crazy otherwise
+		memcpy(r, cpu->reg, 8*sizeof(unsigned char)); 	// Copy of entire register
+		unsigned char *r_opA = &cpu->reg[opA];			// Register value @ opA
+		int *PC = &cpu->PC; 							// Process Counter
+		int *FL = &cpu->FL; 							// Flags
+		int rjv = r[opA]-ab; 							// register jump value
 
 		// main switch
 		switch (IR) 
-		{
-			// ALU operations 
+		{	// ALU operations 
 			case ADD :	alu(cpu, ALU_ADD, opA, opB); 			break; // Basic Math
 			case SUB :	alu(cpu, ALU_SUB, opA, opB); 			break;
 			case MUL :	alu(cpu, ALU_MUL, opA, opB); 			break;
@@ -76,43 +99,40 @@ void cpu_run(struct cpu *cpu)
 			case SHR : 	alu(cpu, ALU_SHR, opA, opB);			break;
 			// CPU processes
 			case PUSH:	s_push(cpu, r[opA]);					break; // Stack
-			case POP :	cpu->reg[opA] = s_pop(cpu); 			break;
-			case CALL: 											break; // Subroutines 
-			case RET :  										break;
+			case POP :	*r_opA = s_pop(cpu); 					break;
+			case CALL: 	s_push(cpu, *PC+ab); *PC = rjv;			break; // Subroutines 
+			case RET :  *PC = s_pop(cpu)-ab; 					break;
 			case INT :											break; // Interupts
 			case IRET:											break;
-			case JEQ :											break; // Jumps
-			case JGE :											break;
-			case JGT :											break;
-			case JLE : 											break;
-			case JLT :											break;
-			case JMP : 											break;
-			case JNE :											break;
-			case LD  : 	cpu->reg[opA] = ram_r(cpu,0,-1,opB);	break; // Load
-			case LDI : 	cpu->reg[opA] = opB; 					break;
+			case JMP : 	*PC = rjv;								break; // Jumps
+			case JNE :	*PC = *FL!=1 			? 	rjv : *PC;	break;	// !=
+			case JEQ :	*PC = *FL==1 			? 	rjv : *PC; 	break; 	// ==
+			case JGE :	*PC = *FL==2 || *FL==1	? 	rjv : *PC;	break;	// >= 
+			case JGT :	*PC = *FL==2 			? 	rjv : *PC;	break;	// >
+			case JLE :	*PC = *FL==4 || *FL==1	? 	rjv : *PC;	break;	// <=
+			case JLT :	*PC = *FL==4 			? 	rjv : *PC;	break;	// <
+			case LD  : 	*r_opA = ram_r(cpu, 0, -1, r[opB]);		break; // Load
+			case LDI : 	*r_opA = opB; 							break;
 			case ST  :	ram_w(cpu, r[opA], r[opB]);				break;
 			case PRN : 	printf("%d\n", r[opA]);					break; // Printing
-			case PRA : 	printf("%c\n", r[opA]);					break;
-			case NOP :											break; // Admin
+			case PRA : 	printf("%c", r[opA]);					break;
+			case NOP :	/* do nothing LOL */					break; // Admin
 			case HLT : 	run = 0; 								break;
-			default  :	printf("lol, Get rekt.\n");				exit(1);
+			default  :	printf("lol, Get rekt.%d\n", IR);		exit(1);
 		}
-
-		cpu->PC += adv_by;
+		*PC += ab;
   	}
 } 
 
 /**
- * helpers
+ * helper functions
  */
-int ram_r(struct cpu *cpu, int offset, int reg_addr, int mem_addr)
+int ram_r(struct cpu *cpu, int offset, int r_addr, int m_addr)
 {
-	if (reg_addr == -1 && mem_addr == -1){ 	// reading PC directions from a program
-		return cpu->ram[cpu->PC + offset];
-	} else if (mem_addr == -1){			 	// reading memory by a register address
-		return cpu->ram[cpu->reg[reg_addr]];
-	} else {							 	// reading memory by a memory address
-		return cpu->ram[mem_addr];}	
+	return r_addr==-1 && m_addr==-1 
+						? cpu->ram[cpu->PC + offset]	// reading PC directions from a program
+		: m_addr==-1 	? cpu->ram[cpu->reg[r_addr]] 	// reading memory by a register address
+						: cpu->ram[m_addr];				// reading memory by a memory address
 }
 
 void ram_w(struct cpu *cpu, int address, unsigned int value)
