@@ -23,10 +23,10 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
 		case ALU_AND: 	*A &= *B;			break; 
 		case ALU_OR :	*A |= *B;			break; 
 		case ALU_XOR:	*A ^= *B;			break;
-		case ALU_DEC: 	*A = *A - 1;		break; // Other
-		case ALU_INC: 	*A = *A + 1;		break;
-		case ALU_SHL:	*A <<= *B;			break; 
-		case ALU_SHR:	*A >>= *B;			break; 
+		case ALU_DEC: 	*A =*A-1;			break; // Other
+		case ALU_INC: 	*A =*A+1;			break;
+		case ALU_SHL:	*A <<=*B;			break; 
+		case ALU_SHR:	*A >>=*B;			break; 
 		case ALU_CMP:	*FL = *A == *B	? 
 							1 : *A > *B	?
 								2 : 4;		break;
