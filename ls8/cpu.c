@@ -42,7 +42,6 @@ void cpu_run(struct cpu *cpu)
 {
   	int run = 1; 
  	int IR, ab, opA, opB;
-	unsigned char r[8];
 
   	// main loop
   	while (run) 
@@ -72,11 +71,11 @@ void cpu_run(struct cpu *cpu)
 		opB = ram_r(cpu, 2, -1, -1);
 
 		// helpers: because the switch statement is crazy otherwise
-		memcpy(r, cpu->reg, 8*sizeof(unsigned char)); 	// Copy of entire register
 		unsigned char *r_opA = &cpu->reg[opA];			// Register value @ opA
+		unsigned char *r_opB = &cpu->reg[opB];			// Register value @ opB
 		int *PC = &cpu->PC; 							// Process Counter
 		int *FL = &cpu->FL; 							// Flags
-		int rjv = r[opA]-ab; 							// register jump value
+		int rjv = *r_opA-ab; 							// register jump value
 
 		// main switch
 		switch (IR) 
@@ -84,9 +83,9 @@ void cpu_run(struct cpu *cpu)
 			case ADD :	alu(cpu, ALU_ADD, opA, opB); 			break; // Basic Math
 			case SUB :	alu(cpu, ALU_SUB, opA, opB); 			break;
 			case MUL :	alu(cpu, ALU_MUL, opA, opB); 			break;
-			case DIV :	if(r[opB]){alu(cpu,ALU_DIV,opA,opB);}
+			case DIV :	if(*r_opB){alu(cpu,ALU_DIV,opA,opB);}	// div by 0 ERR	   
 				else	{run = 0;printf("ERR: div by 0.\n");}	break;
-			case MOD :	if(r[opB]){alu(cpu,ALU_MOD,opA,opB);}
+			case MOD :	if(*r_opB){alu(cpu,ALU_MOD,opA,opB);}	// div by 0 ERR
 				else	{run = 0;printf("ERR: div by 0.\n");}	break;
 			case NOT :	alu(cpu, ALU_NOT, opA, opB);			break; // Bitwise
 			case AND : 	alu(cpu, ALU_AND, opA, opB); 			break;
@@ -98,7 +97,7 @@ void cpu_run(struct cpu *cpu)
 			case SHL : 	alu(cpu, ALU_SHL, opA, opB);			break;
 			case SHR : 	alu(cpu, ALU_SHR, opA, opB);			break;
 			// CPU processes
-			case PUSH:	s_push(cpu, r[opA]);					break; // Stack
+			case PUSH:	s_push(cpu, *r_opA);					break; // Stack
 			case POP :	*r_opA = s_pop(cpu); 					break;
 			case CALL: 	s_push(cpu, *PC+ab); *PC = rjv;			break; // Subroutines 
 			case RET :  *PC = s_pop(cpu)-ab; 					break;
@@ -111,14 +110,14 @@ void cpu_run(struct cpu *cpu)
 			case JGT :	*PC = *FL==2 			? 	rjv : *PC;	break;	// >
 			case JLE :	*PC = *FL==4 || *FL==1	? 	rjv : *PC;	break;	// <=
 			case JLT :	*PC = *FL==4 			? 	rjv : *PC;	break;	// <
-			case LD  : 	*r_opA = ram_r(cpu, 0, -1, r[opB]);		break; // Load
+			case LD  : 	*r_opA = ram_r(cpu, 0, -1, *r_opB);		break; // Load
 			case LDI : 	*r_opA = opB; 							break;
-			case ST  :	ram_w(cpu, r[opA], r[opB]);				break;
-			case PRN : 	printf("%d\n", r[opA]);					break; // Printing
-			case PRA : 	printf("%c", r[opA]);					break;
+			case ST  :	ram_w(cpu, *r_opA, *r_opB);				break;
+			case PRN : 	printf("%d\n", *r_opA);					break; // Printing
+			case PRA : 	printf("%c", *r_opA);					break;
 			case NOP :	/* do nothing LOL */					break; // Admin
 			case HLT : 	run = 0; 								break;
-			default  :	printf("lol, Get rekt.%d\n", IR);		exit(1);
+			default  :	printf("lol, Get rekt. %d\n", IR);		exit(1);
 		}
 		*PC += ab;
   	}
@@ -129,10 +128,10 @@ void cpu_run(struct cpu *cpu)
  */
 int ram_r(struct cpu *cpu, int offset, int r_addr, int m_addr)
 {
-	return r_addr==-1 && m_addr==-1 
-						? cpu->ram[cpu->PC + offset]	// reading PC directions from a program
-		: m_addr==-1 	? cpu->ram[cpu->reg[r_addr]] 	// reading memory by a register address
-						: cpu->ram[m_addr];				// reading memory by a memory address
+	return r_addr==-1 && m_addr==-1 ? // lol, this formatting? Regular C ain't any better
+		cpu->ram[cpu->PC + offset]	/* reading PC directions from a program	*/	: m_addr==-1 ? 
+		cpu->ram[cpu->reg[r_addr]] 	/* reading memory by a register address	*/  : 
+		cpu->ram[m_addr];			/* reading memory by a memory address 	*/
 }
 
 void ram_w(struct cpu *cpu, int address, unsigned int value)
