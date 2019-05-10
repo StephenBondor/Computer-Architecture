@@ -383,7 +383,7 @@ Machine code:
 55 0r
 ```
 
-ADDED TODO
+DONE
 
 ### JGE
 
@@ -397,7 +397,7 @@ in the given register.
 5A 0r
 ```
 
-ADDED TO DO
+DONE
 
 ### JGT
 
@@ -413,7 +413,7 @@ Machine code:
 57 0r
 ```
 
-ADDED TO DO
+DONE
 
 ### JLE
 
@@ -427,7 +427,7 @@ the given register.
 59 0r
 ```
 
-ADDED TODO
+DONE
 
 ### JLT
 
@@ -443,7 +443,7 @@ Machine code:
 58 0r
 ```
 
-ADDED TODO
+DONE
 
 ### JMP
 
@@ -493,7 +493,7 @@ Machine code:
 83 0a 0b
 ```
 
-DONE (i think...)
+DONE
 
 ### LDI
 
