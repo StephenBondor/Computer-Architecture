@@ -79,13 +79,13 @@ void cpu_run(struct cpu *cpu)
 		// main switch
 		switch (IR) 
 		{	// ALU operations 
-			case ADD :	alu(cpu, ALU_ADD, opA, opB); 			break; // Basic Math
-			case SUB :	alu(cpu, ALU_SUB, opA, opB); 			break;
-			case MUL :	alu(cpu, ALU_MUL, opA, opB); 			break;
+			case ADD :	alu(cpu, ALU_ADD, opA, opB); 		    break; // Basic Math
+			case SUB :	alu(cpu, ALU_SUB, opA, opB); 		    break;
+			case MUL :	alu(cpu, ALU_MUL, opA, opB); 		    break;
 			case DIV :	if(*r_opB){alu(cpu,ALU_DIV,opA,opB);}	// div by 0 ERR	   
-				else	{run = 0;printf("ERR: div by 0.\n");}	break;
+			    else	{run = 0;printf("ERR: div by 0.\n");}	break;
 			case MOD :	if(*r_opB){alu(cpu,ALU_MOD,opA,opB);}	// div by 0 ERR
-				else	{run = 0;printf("ERR: div by 0.\n");}	break;
+			    else	{run = 0;printf("ERR: div by 0.\n");}	break;
 			case NOT :	alu(cpu, ALU_NOT, opA, opB);			break; // Bitwise
 			case AND : 	alu(cpu, ALU_AND, opA, opB); 			break;
 			case OR  :	alu(cpu, ALU_OR,  opA, opB);			break;
@@ -99,7 +99,7 @@ void cpu_run(struct cpu *cpu)
 			case PUSH:	s_push(cpu, *r_opA);					break; // Stack
 			case POP :	*r_opA = s_pop(cpu); 					break;
 			case CALL: 	s_push(cpu, *PC+ab); *PC = rjv;			break; // Subroutines 
-			case RET :  *PC = s_pop(cpu)-ab; 					break;
+			case RET :	*PC = s_pop(cpu)-ab; 					break;
 			case INT :											break; // Interupts
 			case IRET:											break;
 			case JMP : 	*PC = rjv;								break; // Jumps
