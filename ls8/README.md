@@ -2,8 +2,8 @@
 
 ## Implementation of the LS-8 Emulator
 
-_Objective_: to gain a deeper understanding of how a CPU functions at a
-low level.
+_Objective_: to gain a deeper understanding of how a CPU functions at a low
+level.
 
 We're going to write an emulator for the world-famous LambdaSchool-8 computer,
 otherwise known as LS-8! This is an 8-bit computer with 8-bit memory addressing,
@@ -14,8 +14,8 @@ where something is in memory), computations, and instructions. With 8 bits, our
 CPU has a total of 256 bytes of memory and can only compute values up to 255.
 The CPU could support 256 instructions, as well, but we won't need them.
 
-For starters, we'll execute code that stores the value 8 in a register,
-then prints it out:
+For starters, we'll execute code that stores the value 8 in a register, then
+prints it out:
 
 ```
 # print8.ls8: Print the number 8 on the screen
@@ -30,21 +30,21 @@ then prints it out:
 
 The binary numeric value on the left in the `print8.ls8` code above is either:
 
-* the machine code value of the instruction (e.g. `10000010` for `LDI`), also
-  known as the _opcode_
+-   the machine code value of the instruction (e.g. `10000010` for `LDI`), also
+    known as the _opcode_
 
 or
 
-* one of the opcode's arguments (e.g. `00000000` for `R0` or `00001000` for the
-  value `8`), also known as the _operands_.
+-   one of the opcode's arguments (e.g. `00000000` for `R0` or `00001000` for
+    the value `8`), also known as the _operands_.
 
 This code above requires the implementation of three instructions:
 
-* `LDI`: load "immediate", store a value in a register, or "set this register to
-  this value".
-* `PRN`: a pseudo-instruction that prints the numeric value stored in a
-  register.
-* `HLT`: halt the CPU and exit the emulator.
+-   `LDI`: load "immediate", store a value in a register, or "set this register
+    to this value".
+-   `PRN`: a pseudo-instruction that prints the numeric value stored in a
+    register.
+-   `HLT`: halt the CPU and exit the emulator.
 
 See [the LS-8 spec](../LS8-spec.md) for more details.
 
@@ -60,11 +60,31 @@ but you'll have to implement those three above instructions first!
 
 ## Step 0: IMPORTANT: inventory what is here!
 
-* Make a list of files here.
-* Write a short 3-10-word description of what each file does.
-* Note what has been implemented, and what hasn't.
-* Read this whole file.
-* Skim the spec.
+-   Make a list of files here. ok.
+
+```
+1. The FAQ
+2. The readme
+3 - 25. What is this?
+```
+
+Done
+
+-   Write a short 3-10-word description of what each file does.
+
+See above.
+
+-   Note what has been implemented, and what hasn't.
+
+Against what standard should i know what has or has not been implemented?
+
+-   Read this whole file.
+
+Done
+
+-   Skim the spec.
+
+Done
 
 ## Step 1: Implement `struct cpu` in `cpu.h`
 
@@ -79,12 +99,16 @@ unsigned char x;
 (Weirdly in C, if you don't specific `signed` or `unsigned` with a `char`, it's
 up to the compiler which it uses.)
 
+DONE
+
 ## Step 2: Add RAM functions
 
 In `cpu.c`, add functions `cpu_ram_read()` and `cpu_ram_write()` that access the
 RAM inside the `struct cpu`.
 
 We'll make use of these helper function later.
+
+DONE
 
 ## Step 3: Implement the core of `cpu_init()`
 
@@ -95,6 +119,8 @@ as necessary. At first, the PC, registers, and RAM should be cleared to zero.
 Later on, you might do further initialization here, e.g. setting the initial
 value of the stack pointer.
 
+DONE
+
 ## Step 4: Implement the core of `cpu_run()`
 
 This is the workhorse function of the entire processor. It's the most difficult
@@ -104,43 +130,67 @@ It needs to read the memory address that's stored in register `PC`, and store
 that result in `IR`, the _Instruction Register_. This can just be a local
 variable in `cpu_run()`.
 
+DONE
+
 Some instructions requires up to the next two bytes of data _after_ the `PC` in
 memory to perform operations on. Sometimes the byte value is a register number,
 other times it's a constant value (in the case of `LDI`). Using
 `cpu_ram_read()`, read the bytes at `PC+1` and `PC+2` from RAM into variables
 `operandA` and `operandB` in case the instruction needs them.
 
+DONE
+
 Then, depending on the value of the opcode, perform the actions needed for the
 instruction per the LS-8 spec. Maybe a `switch` statement...? Plenty of options.
+
+ok
 
 After the handler returns, the `PC` needs to be updated to point to the next
 instruction for the next iteration of the loop in `cpu_run()`. The number of
 bytes an instruction uses can be determined from the two high bits (bits 6-7) of
 the instruction opcode. See the LS-8 spec for details.
 
+DONE
+
 ## Step 5: Implement the `HLT` instruction handler
 
 Add the `HLT` instruction to `cpu.h`.
 
-In `cpu_run()` in your switch, exit the loop if a `HLT` instruction is
-encountered, regardless of whether or not there are more lines of code in the LS-8 program you loaded. 
+DONE
 
-We can consider `HLT` to be similar to a `return` or `exit()` in that we stop whatever we are doing, wherever we are.
+In `cpu_run()` in your switch, exit the loop if a `HLT` instruction is
+encountered, regardless of whether or not there are more lines of code in the
+LS-8 program you loaded.
+
+DONE
+
+We can consider `HLT` to be similar to a `return` or `exit()` in that we stop
+whatever we are doing, wherever we are.
+
+Ok
 
 ## Step 6: Add the `LDI` instruction
 
 This instruction sets a specified register to a specified value.
 
+ok
+
 See the LS-8 spec for the details of what this instructions does and its opcode
 value.
+
+ok
+
+DONE
 
 ## Step 7: Add the `PRN` instruction
 
 This is a very similar process to adding `LDI`, but the handler is simpler. See
 the LS-8 spec.
 
-*At this point, you should be able to run the program and have it print `8` to
-the console!*
+_At this point, you should be able to run the program and have it print `8` to
+the console!_
+
+DONE
 
 ## Step 8: Un-hardcode the machine code
 
@@ -178,7 +228,8 @@ so you can look in `argv[1]` for the name of the file to load.
 > Bonus: check to make sure the user has put a command line argument where you
 > expect, and print an error and exit if they didn't.
 
-In `load_cpu()`, you will now want to use those command line arguments to open a file, read in its contents line by line, and save appropriate data into RAM. 
+In `load_cpu()`, you will now want to use those command line arguments to open a
+file, read in its contents line by line, and save appropriate data into RAM.
 
 As you process lines from the file, you should be on the lookout for blank lines
 (ignore them), and you should ignore everything after a `#`, since that's a
@@ -186,6 +237,8 @@ comment.
 
 You'll have to convert the binary strings to integer values to store in RAM. The
 built-in `strtoul()` library function might help you here.
+
+DONE
 
 ## Step 9: Implement a Multiply and Print the Result
 
@@ -216,11 +269,11 @@ One you run it with `./ls8 examples/mult.ls8`, you should see:
 
 Check the LS-8 spec for what the `MUL` instruction does.
 
-> Note: `MUL` is the responsiblity of the ALU, so it would be
-nice if your code eventually called the `alu()` function with appropriate
-arguments to get the work done.
-> 
+> Note: `MUL` is the responsiblity of the ALU, so it would be nice if your code
+> eventually called the `alu()` function with appropriate arguments to get the
+> work done.
 
+DONE
 
 ## Step 10: Beautify your `cpu_run()` loop, if needed
 
@@ -312,11 +365,13 @@ a high address) and grows _downward_ as things are pushed on. The LS-8 is no
 exception to this.
 
 Implement a system stack per the spec. Add `PUSH` and `POP` instructions. Read
-  the beginning of the spec to see which register is the stack pointer. 
-  
-* Values themselves should be saved in the ***portion of RAM*** _that is allocated for the stack_. 
-  -  Use the stack pointer to modify the correct block of memory. 
-  - Make sure you update the stack pointer appropriately as you `PUSH` and `POP` items to and from the stack.
+the beginning of the spec to see which register is the stack pointer.
+
+-   Values themselves should be saved in the **_portion of RAM_** _that is
+    allocated for the stack_.
+    -   Use the stack pointer to modify the correct block of memory.
+    -   Make sure you update the stack pointer appropriately as you `PUSH` and
+        `POP` items to and from the stack.
 
 If you run `./ls8 examples/stack.ls8` you should see the output:
 
@@ -328,29 +383,33 @@ If you run `./ls8 examples/stack.ls8` you should see the output:
 
 ## Step 12: Implement Subroutine Calls
 
-Back in the old days, functions were called _subroutines_. In machine code, subroutines
-enable you to jump to any address with the `CALL` instruction, and then return
-back to where you called from with the `RET` instruction. This enables you to
-create reusable functions.
+Back in the old days, functions were called _subroutines_. In machine code,
+subroutines enable you to jump to any address with the `CALL` instruction, and
+then return back to where you called from with the `RET` instruction. This
+enables you to create reusable functions.
 
-Subroutines have many similarities to functions in higher-level languages. Just as a function in C, JavaScript or Python will jump from the function call, to its definition, and then return back to the line of code following the call, subroutines will also allow us to execute instructions non-sequentially. 
+Subroutines have many similarities to functions in higher-level languages. Just
+as a function in C, JavaScript or Python will jump from the function call, to
+its definition, and then return back to the line of code following the call,
+subroutines will also allow us to execute instructions non-sequentially.
 
-The stack is used to hold the return address used by `RET`, so you **must** implement the
-stack in step 11, first. Then, add subroutine instructions `CALL` and `RET`.
+The stack is used to hold the return address used by `RET`, so you **must**
+implement the stack in step 11, first. Then, add subroutine instructions `CALL`
+and `RET`.
 
-* For `CALL`, you will likely have to modify your handler call in `cpu_run()`. The
-problem is that some instructions want to execute and move to the next
-instruction like normal, but others, like `CALL` and `JMP` want to go to a
-specific address.
+-   For `CALL`, you will likely have to modify your handler call in `cpu_run()`.
+    The problem is that some instructions want to execute and move to the next
+    instruction like normal, but others, like `CALL` and `JMP` want to go to a
+    specific address.
 
-  > Note: `CALL` is very similar to the `JMP` instruction. However, there is one key difference between them. Can you find it in the specs? 
-  > 
+    > Note: `CALL` is very similar to the `JMP` instruction. However, there is
+    > one key difference between them. Can you find it in the specs?
 
-  * In **any** case where the instruction handler sets the `PC` directly, you
-_don't_ want to advance the PC to the next instruction. So you'll have to set up
-a special case for those types of instructions. This can be a flag you
-explicitly set per-instruction... but can also be computed from the value in
-`IR`. Check out the spec for more.
+    -   In **any** case where the instruction handler sets the `PC` directly,
+        you _don't_ want to advance the PC to the next instruction. So you'll
+        have to set up a special case for those types of instructions. This can
+        be a flag you explicitly set per-instruction... but can also be computed
+        from the value in `IR`. Check out the spec for more.
 
 If you run `./ls8 examples/call.ls8` you should see the output:
 
@@ -369,8 +428,8 @@ Add interrupts to the LS-8 emulator.
 
 **You must have implmented the `ST` instruction before doing this.**
 
-See the [LS-8
-spec](https://github.com/LambdaSchool/Computer-Architecture-One/blob/master/LS8-SPEC.md)
+See the
+[LS-8 spec](https://github.com/LambdaSchool/Computer-Architecture-One/blob/master/LS8-SPEC.md)
 for details on implementation.
 
 The LS-8 should fire a timer interrupt one time per second. This could be
@@ -382,19 +441,18 @@ handler for the timer when it expires.
 
 When the timer is ready to fire, set bit 0 of the IS register (R6).
 
-Later in the main instruction loop, you'll check to see if bit 0 of the
-IS register is set, and if it is, you'll push the registers on the
-stack, look up the interrupt handler address in the interrupt vector
-table at address `0xF8`, and set the PC to it. Execution continues in
-the interrupt handler.
+Later in the main instruction loop, you'll check to see if bit 0 of the IS
+register is set, and if it is, you'll push the registers on the stack, look up
+the interrupt handler address in the interrupt vector table at address `0xF8`,
+and set the PC to it. Execution continues in the interrupt handler.
 
-Then when an `IRET` instruction is found, the registers and PC are
-popped off the stack and execution continues normally.
+Then when an `IRET` instruction is found, the registers and PC are popped off
+the stack and execution continues normally.
 
 ## Example
 
-This code prints out the letter `A` from the timer interrupt handler
-that fires once per second.
+This code prints out the letter `A` from the timer interrupt handler that fires
+once per second.
 
 ```
 # interrupts.ls8
@@ -430,7 +488,6 @@ that fires once per second.
 00010011 # IRET
 ```
 
-
 The assembly program is interested in getting timer interrupts, so it sets the
 IM register to `00000001` with `LDI R5,1`.
 
@@ -461,7 +518,6 @@ for (int i = 0; i < 8; i++) {
 executing the current instruction as per usual.)
 
 If `interrupt_happened`, check the LS-8 spec for details on what to do.
-
 
 ## Stretch Goal: Keyboard Interrupts
 
